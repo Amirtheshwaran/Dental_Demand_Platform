@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Demand Dashboard - MVP</title>
+    <!-- Simple system fonts for MVP look -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="mvp-styles.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <header class="mvp-header">
+        <h1>Dental Demand Dashboard – MVP</h1>
+        <div class="version-tag">Build v0.1-alpha</div>
+    </header>
+
+    <div class="mvp-layout">
+        
+        <!-- Sidebar filters -->
+        <aside class="mvp-sidebar">
+            <div class="sidebar-title">Data Filters</div>
+            <p class="sidebar-help">Select parameters to update the main view.</p>
+
+            <div class="filter-box">
+                <label for="state-filter">State</label>
+                <select id="state-filter">
+                    <option value="all">All States</option>
+                    <option value="TX">Texas</option>
+                    <option value="FL">Florida</option>
+                    <option value="WV">West Virginia</option>
+                    <option value="VA">Virginia</option>
+                </select>
+            </div>
+
+            <div class="filter-box">
+                <label for="prev-slider">Tooth Loss Prevalence</label>
+                <div class="slider-header">
+                    <span>Min: <span id="prev-val">0%</span></span>
+                </div>
+                <input type="range" id="prev-slider" min="0" max="50" value="0">
+            </div>
+
+            <button class="mvp-btn" id="apply-btn">Apply Filters</button>
+        </aside>
+
+        <!-- Main Chart Area -->
+        <main class="mvp-main">
+            <div class="chart-panel">
+                <div class="panel-heading">
+                    <h2>Top 10 Counties by Prevalence</h2>
+                </div>
+                
+                <div class="chart-wrapper">
+                    <canvas id="mvpBarChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="debug-panel">
+                <strong>Raw Output:</strong> 10 records loaded. Data ready. Waiting for filter inputs...
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Slider logic
+            const slider = document.getElementById('prev-slider');
+            const valDisplay = document.getElementById('prev-val');
+            
+            slider.addEventListener('input', (e) => {
+                valDisplay.textContent = e.target.value + '%';
+            });
+
+            // Dummy Data for Interaction
+            const rawData = [
+                { county: 'McDowell', state: 'WV', prev: 41.2 },
+                { county: 'Buchanan', state: 'VA', prev: 38.5 },
+                { county: 'Harlan', state: 'KY', prev: 37.9 },
+                { county: 'Owsley', state: 'KY', prev: 36.4 },
+                { county: 'Dickenson', state: 'VA', prev: 35.8 },
+                { county: 'Tazewell', state: 'VA', prev: 35.1 },
+                { county: 'Mingo', state: 'WV', prev: 34.6 },
+                { county: 'Clay', state: 'KY', prev: 33.9 },
+                { county: 'Perry', state: 'KY', prev: 33.2 },
+                { county: 'Wyoming', state: 'WV', prev: 32.8 },
+                { county: 'Marion', state: 'FL', prev: 31.5 },
+                { county: 'Citrus', state: 'FL', prev: 29.8 },
+                { county: 'Cameron', state: 'TX', prev: 28.5 },
+                { county: 'Zavala', state: 'TX', prev: 27.2 },
+                { county: 'Starr', state: 'TX', prev: 26.5 },
+                { county: 'Miami-Dade', state: 'FL', prev: 21.1 },
+                { county: 'Broward', state: 'FL', prev: 18.5 },
+                { county: 'Harris', state: 'TX', prev: 15.2 },
+                { county: 'Travis', state: 'TX', prev: 11.5 },
+                { county: 'Fairfax', state: 'VA', prev: 9.8 },
+                { county: 'Loudoun', state: 'VA', prev: 8.5 },
+                { county: 'Monongalia', state: 'WV', prev: 14.5 }
+            ];
+
+            const stateSelect = document.getElementById('state-filter');
+            const debugPanel = document.querySelector('.debug-panel');
+            let mvpChart;
+
+            function updateChart() {
+                const selectedState = stateSelect.value;
+                const minPrev = parseFloat(slider.value);
+
+                let filtered = rawData.filter(d => {
+                    const stateMatch = selectedState === 'all' || d.state === selectedState;
+                    const prevMatch = d.prev >= minPrev;
+                    return stateMatch && prevMatch;
+                });
+
+                filtered.sort((a, b) => b.prev - a.prev);
+                const top10 = filtered.slice(0, 10);
+
+                mvpChart.data.labels = top10.map(d => `${d.county}, ${d.state}`);
+                mvpChart.data.datasets[0].data = top10.map(d => d.prev);
+                mvpChart.update();
+                
+                debugPanel.innerHTML = `<strong>Raw Output:</strong> ${filtered.length} records matched filters. Displaying top ${top10.length}.`;
+            }
+
+            // Chart setup
+            const ctx = document.getElementById('mvpBarChart').getContext('2d');
+            mvpChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Prevalence %',
+                        data: [],
+                        backgroundColor: '#607d8b', /* Stale prototype blue-gray */
+                        borderWidth: 1,
+                        borderColor: '#455a64'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, max: 50, title: { display: true, text: 'Percentage (%)' } }
+                    }
+                }
+            });
+
+            // Initialize chart with initial data
+            updateChart();
+
+            // Button logic
+            const btn = document.getElementById('apply-btn');
+            btn.addEventListener('click', () => {
+                btn.textContent = 'Applying...';
+                btn.disabled = true;
+                setTimeout(() => {
+                    updateChart();
+                    btn.textContent = 'Apply Filters';
+                    btn.disabled = false;
+                }, 400); // Simulate network latency
+            });
+        });
+    </script>
+</body>
+</html>

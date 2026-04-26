@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Network Planner</title>
+    <!-- Use a very clean, popular sans-serif -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-500: #64748b;
+            --blue-600: #2563eb;
+            --blue-50: #eff6ff;
+            --teal-600: #0d9488;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .slide {
+            width: 1280px;
+            height: 720px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            page-break-after: always;
+        }
+
+        .slide-header {
+            padding: 50px 60px 10px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .slide-header h1 {
+            font-size: 32px;
+            color: var(--slate-900);
+            font-weight: 700;
+        }
+
+        .slide-header .subtitle {
+            font-size: 20px;
+            color: var(--slate-500);
+            font-weight: 400;
+            margin-left: 16px;
+        }
+
+        .slide-number {
+            font-size: 16px;
+            color: var(--slate-500);
+            font-weight: 500;
+        }
+
+        .header-divider {
+            height: 4px;
+            background-color: var(--slate-900);
+            margin: 20px 60px 0 60px;
+            width: 80px; /* Short elegant line */
+        }
+
+        .slide-content {
+            padding: 40px 60px 80px 60px; /* Bottom padding protects the footer */
+            flex-grow: 1;
+            display: flex;
+            gap: 60px;
+            min-height: 0;
+        }
+
+        .col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        h2 { font-size: 24px; color: var(--slate-800); margin-bottom: 20px; font-weight: 500; }
+        
+        p, li {
+            font-size: 18px;
+            color: var(--slate-800);
+            line-height: 1.6;
+        }
+
+        p.muted {
+            color: var(--slate-500);
+            font-size: 16px;
+        }
+
+        ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        li {
+            position: relative;
+            padding-left: 20px;
+        }
+
+        li::before {
+            content: "—";
+            position: absolute;
+            left: 0;
+            color: var(--blue-600);
+            font-weight: 700;
+        }
+
+        .mockup-container {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            background: #f8fafc;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            padding: 4px;
+        }
+
+        img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        .footer-logo {
+            position: absolute;
+            bottom: 30px;
+            left: 60px;
+            font-size: 12px;
+            color: var(--slate-500);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Title Slide Custom */
+        .title-slide {
+            justify-content: center;
+            padding: 80px;
+            background-color: var(--slate-900);
+        }
+
+        .title-slide h1 {
+            font-size: 56px;
+            color: #ffffff;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+        
+        .title-slide .sub {
+            font-size: 28px;
+            color: var(--slate-500);
+            margin-bottom: 80px;
+            font-weight: 300;
+        }
+
+        .team-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 40px;
+            border-top: 1px solid var(--slate-800);
+            padding-top: 40px;
+        }
+
+        .team-member {
+            font-size: 20px;
+            color: #f1f5f9;
+        }
+
+        /* Simple Flow Diagram */
+        .diagram-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+            padding: 40px 0;
+        }
+
+        .d-node {
+            border: 1px solid var(--slate-800);
+            padding: 20px 24px;
+            font-weight: 500;
+            font-size: 16px;
+            color: var(--slate-900);
+            text-align: center;
+            width: 180px;
+            background: #ffffff;
+        }
+
+        .d-node.highlight {
+            background: var(--blue-50);
+            border-color: var(--blue-600);
+            color: var(--blue-600);
+        }
+
+        .d-arrow {
+            color: var(--slate-500);
+            font-size: 20px;
+        }
+
+        /* Grid for sprint */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 40px;
+            width: 100%;
+        }
+
+        @media print {
+            body { background: white; padding: 0; gap: 0; }
+            .slide { box-shadow: none; border: none; }
+            @page { size: 1280px 720px; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slide 1: MVP Demo -->
+    <div class="slide">
+        <div class="slide-header">
+            <div>
+                <div style="font-size: 14px; color: var(--blue-600); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;">
+                    Dental Network Planner: AI-Powered Expansion Strategy
+                </div>
+                <div style="font-size: 12px; color: var(--slate-500); margin-bottom: 12px;">
+                    Team: Amirtheshwaran Navaneethakrishnan, Hruthik Narayan Sarva, Anderson Zhu
+                </div>
+                <h1>MVP Demo <span class="subtitle">Streamlit Prototype</span></h1>
+            </div>
+            <div class="slide-number">01</div>
+        </div>
+        <div class="header-divider"></div>
+        <div class="slide-content">
+            <div class="col" style="flex: 1.2;">
+                <h2>Baseline Application</h2>
+                <p class="muted" style="margin-bottom: 30px;">Designed for rapid deployment and testing in secondary markets.</p>
+                <ul>
+                    <li>Features interactive state selection and prevalence thresholding using range sliders.</li>
+                    <li>Visualizes the Top 10 counties by absolute complete tooth loss volume using actual CDC metrics.</li>
+                    <li>Successfully identifies high-need regions for early-stage expansion planning.</li>
+                </ul>
+            </div>
+            <div class="col" style="flex: 1.8;">
+                <div class="mockup-container">
+                    <img src="mvp_highres.png" alt="MVP Dashboard Interface">
+                </div>
+            </div>
+        </div>
+        <div class="footer-logo">Dental Network Planner</div>
+    </div>
+
+    <!-- Slide 2: Visual Grammar Defense -->
+    <div class="slide">
+        <div class="slide-header">
+            <div>
+                <h1>Visual Grammar Justification</h1>
+            </div>
+            <div class="slide-number">02</div>
+        </div>
+        <div class="header-divider"></div>
+        <div class="slide-content">
+            <div class="col">
+                <div style="margin-bottom: 40px;">
+                    <h2>1. Chart Selection</h2>
+                    <p><strong>Horizontal Bar Chart</strong></p>
+                    <p class="muted">The optimal selection for ranking categorical data (Counties). It accommodates long text labels without requiring awkward rotation.</p>
+                </div>
+                <div>
+                    <h2>2. Visual Marks</h2>
+                    <p><strong>Quantitative Magnitude</strong></p>
+                    <p class="muted">Solid geometries anchored at zero provide an unambiguous physical representation of the underlying value.</p>
+                </div>
+            </div>
+            <div class="col">
+                <div style="margin-bottom: 40px;">
+                    <h2>3. Data Channels</h2>
+                    <ul>
+                        <li><strong>Length:</strong> Encodes prevalence percentage. Length is the most accurate visual channel for human perception.</li>
+                        <li><strong>Position:</strong> Enables easy sequential and comparative reading from top to bottom.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h2>4. Effectiveness</h2>
+                    <ul>
+                        <li>Provides immediate identification of highest-need areas.</li>
+                        <li>Imposes near-zero cognitive load on the executive user.</li>
+                        <li>Gridlines are minimized to maximize the data-ink ratio.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-logo">Dental Network Planner</div>
+    </div>
+
+    <!-- Slide 3: Phase 2 Demo -->
+    <div class="slide">
+        <div class="slide-header">
+            <div>
+                <h1>Phase 2 <span class="subtitle">Expansion Intelligence</span></h1>
+            </div>
+            <div class="slide-number">03</div>
+        </div>
+        <div class="header-divider"></div>
+        <div class="slide-content">
+            <div class="col" style="flex: 1.8;">
+                <div class="mockup-container">
+                    <img src="phase2_highres.png" alt="Phase 2 Dashboard">
+                </div>
+            </div>
+            <div class="col" style="flex: 1.2;">
+                <h2>Enhanced Capabilities</h2>
+                <p class="muted" style="margin-bottom: 30px;"><strong>Implemented in Streamlit with weighted scoring toggle.</strong> Integration of advanced metrics moving beyond raw prevalence.</p>
+                <ul>
+                    <li>Combines tooth loss, population 65+, income demographics, and urbanization into a single weighted score.</li>
+                    <li><strong>User-adjustable weights via sliders</strong> for live recomputation of ranking.</li>
+                    <li>Transitions the platform from a descriptive visualization to an analytical scoring system.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-logo">Dental Network Planner</div>
+    </div>
+
+    <!-- Slide 4: AI Integration Strategy -->
+    <div class="slide">
+        <div class="slide-header">
+            <div>
+                <h1>AI Integration Strategy</h1>
+            </div>
+            <div class="slide-number">04</div>
+        </div>
+        <div class="header-divider"></div>
+        <div class="slide-content" style="flex-direction: column;">
+            
+            <div class="diagram-container">
+                <div class="d-node">Data Inputs</div>
+                <div class="d-arrow">→</div>
+                <div class="d-node">Feature Engineering</div>
+                <div class="d-arrow">→</div>
+                <div class="d-node highlight">Clustering Model</div>
+                <div class="d-arrow">→</div>
+                <div class="d-node highlight">Prediction Engine</div>
+                <div class="d-arrow">→</div>
+                <div class="d-node">Recommendations</div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <ul style="flex-direction: row; gap: 40px; justify-content: space-between;">
+                    <li style="flex: 1;"><strong>Pattern Recognition:</strong> The system clusters geographic regions based on hidden demographic and geospatial patterns.</li>
+                    <li style="flex: 1;"><strong>Typology Prediction:</strong> Predicts the optimal clinic type (such as a Denture Center vs. an Implant Studio) for market fit.</li>
+                    <li style="flex: 1;"><strong>Actionable Outputs:</strong> Delivers prescriptive location and strategy recommendations mapped directly to anticipated ROI.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-logo">Dental Network Planner</div>
+    </div>
+
+    <!-- Slide 5: Sprint to Final -->
+    <div class="slide">
+        <div class="slide-header">
+            <div>
+                <h1>Sprint to Final Implementation</h1>
+            </div>
+            <div class="slide-number">05</div>
+        </div>
+        <div class="header-divider"></div>
+        <div class="slide-content">
+            <div class="grid-3">
+                
+                <div>
+                    <h2>Remaining Work</h2>
+                    <ul>
+                        <li>Implement operational AI model (clustering + prediction).</li>
+                        <li>Connect the backend model directly to the front-end UI interface.</li>
+                        <li>Enable real-time inference and on-the-fly threshold adjustments.</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h2>UI Improvements</h2>
+                    <ul>
+                        <li>Improve application responsiveness across desktop viewports.</li>
+                        <li>Add micro-interactive feedback to buttons and charts.</li>
+                        <li>Enhance overall visual polish and finalize branded components.</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h2>Final Goal</h2>
+                    <p style="font-size: 20px; font-weight: 500; line-height: 1.5; color: var(--blue-600); margin-top: 10px;">
+                        Deliver a fully integrated decision-support system that accelerates executive strategy formation and minimizes expansion risk.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+        <div class="footer-logo">Dental Network Planner</div>
+    </div>
+
+</body>
+</html>

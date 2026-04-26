@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Expansion Advisor - Dental Network</title>
+    <!-- Google Fonts: Inter & Roboto Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="ai-styles.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="dashboard-container">
+        
+        <!-- Header Section -->
+        <header class="top-nav glass-panel">
+            <div class="brand">
+                <div class="logo-box">
+                    <i class="ph-fill ph-cpu"></i>
+                </div>
+                <div>
+                    <h1>AI Expansion Advisor</h1>
+                    <span class="subtitle">Dental Network Intelligence</span>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <span class="pulse"></span>
+                <span>System Online | Model v4.2 Predictive Mode</span>
+            </div>
+            <a href="index.html" class="nav-back"><i class="ph ph-arrow-left"></i> Back to Main Platform</a>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <main class="dashboard-grid">
+            
+            <!-- Column 1: Input Section -->
+            <section class="panel input-panel glass-panel">
+                <div class="panel-header">
+                    <i class="ph ph-sliders"></i>
+                    <h2>Parameters Input</h2>
+                </div>
+                <p class="panel-desc">Adjust baseline thresholds to feed the neural model.</p>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Tooth Loss Prevalence Minimum</span>
+                        <span class="value-display" id="val-prevalence">15%</span>
+                    </div>
+                    <input type="range" class="cyber-slider" id="slider-prevalence" min="0" max="50" value="15">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Population 65+ Density</span>
+                        <span class="value-display" id="val-pop">Med/High</span>
+                    </div>
+                    <input type="range" class="cyber-slider" id="slider-pop" min="1" max="100" value="65">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Median Income Threshold</span>
+                        <span class="value-display" id="val-income">$45k</span>
+                    </div>
+                    <input type="range" class="cyber-slider" id="slider-income" min="20" max="120" value="45">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Urbanization Level</span>
+                        <span class="value-display" id="val-urban">Any</span>
+                    </div>
+                    <input type="range" class="cyber-slider" id="slider-urban" min="1" max="100" value="50">
+                </div>
+
+                <button class="cyber-btn run-btn" id="btn-run-analysis">
+                    <div class="btn-content">
+                        <i class="ph-bold ph-lightning"></i>
+                        <span>Execute Prediction Model</span>
+                    </div>
+                </button>
+            </section>
+
+            <!-- Column 2: Model Pipeline -->
+            <section class="panel model-panel glass-panel">
+                <div class="panel-header">
+                    <i class="ph ph-git-branch"></i>
+                    <h2>Intelligent Pipeline</h2>
+                </div>
+                
+                <div class="pipeline-container">
+                    
+                    <!-- Node 1: Data -->
+                    <div class="pipeline-node" id="node-data">
+                        <div class="node-icon"><i class="ph ph-database"></i></div>
+                        <div class="node-content">
+                            <h3>Data Ingestion</h3>
+                            <p>Demographics & Health Metrics</p>
+                        </div>
+                        <div class="status-light"></div>
+                    </div>
+
+                    <!-- Connection -->
+                    <div class="pipeline-connection vertical">
+                        <div class="data-particles"></div>
+                    </div>
+
+                    <!-- Node 2: Model -->
+                    <div class="pipeline-node core-node" id="node-model">
+                        <div class="orbit-rings">
+                            <div class="ring r1"></div>
+                            <div class="ring r2"></div>
+                        </div>
+                        <div class="node-icon"><i class="ph-bold ph-brain"></i></div>
+                        <div class="node-content">
+                            <h3>Deep Learning Engine</h3>
+                            <p>Propensity & Clustering Networks</p>
+                        </div>
+                        <div class="processing-bar"><div class="fill" id="model-progress"></div></div>
+                    </div>
+
+                    <!-- Connection -->
+                    <div class="pipeline-connection vertical">
+                        <div class="data-particles"></div>
+                    </div>
+
+                    <!-- Node 3: Predictions -->
+                    <div class="pipeline-node" id="node-predict">
+                        <div class="node-icon"><i class="ph ph-target"></i></div>
+                        <div class="node-content">
+                            <h3>Strategic Outputs</h3>
+                            <p>Yielding Location & Typology</p>
+                        </div>
+                        <div class="status-light"></div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Column 3: Output Section -->
+            <section class="panel output-panel glass-panel">
+                <div class="panel-header">
+                    <div class="title-group">
+                        <i class="ph-bold ph-crosshair"></i>
+                        <h2>Top Recommendations</h2>
+                    </div>
+                    <span class="badge cyber-badge">Confidence: 94%</span>
+                </div>
+                
+                <div class="outputs-list" id="results-container">
+                    
+                    <!-- Card 1 -->
+                    <div class="result-card denture-accent">
+                        <div class="card-top">
+                            <div>
+                                <h3>McDowell County, WV</h3>
+                                <p class="clinic-type"><i class="ph-fill ph-tooth"></i> Denture Center Optimal</p>
+                            </div>
+                            <div class="rank">#1</div>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric">
+                                <span class="label">Propensity Score</span>
+                                <span class="val accent-color">98/100</span>
+                            </div>
+                            <div class="metric risk-col">
+                                <span class="label">Financial Risk</span>
+                                <div class="risk-indicator">
+                                    <div class="risk-bar low"><div style="width: 20%"></div></div>
+                                    <span class="risk-label">Low</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="result-card implant-accent">
+                        <div class="card-top">
+                            <div>
+                                <h3>Collier County, FL</h3>
+                                <p class="clinic-type"><i class="ph-fill ph-screw"></i> Implant Center Optimal</p>
+                            </div>
+                            <div class="rank">#2</div>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric">
+                                <span class="label">Propensity Score</span>
+                                <span class="val sec-accent">91/100</span>
+                            </div>
+                            <div class="metric risk-col">
+                                <span class="label">Execution Risk</span>
+                                <div class="risk-indicator">
+                                    <div class="risk-bar med"><div style="width: 50%"></div></div>
+                                    <span class="risk-label">Medium</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="result-card mixed-accent">
+                        <div class="card-top">
+                            <div>
+                                <h3>Marion County, FL</h3>
+                                <p class="clinic-type"><i class="ph-bold ph-plus-circle"></i> Hybrid Clinic Optimal</p>
+                            </div>
+                            <div class="rank">#3</div>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric">
+                                <span class="label">Propensity Score</span>
+                                <span class="val">88/100</span>
+                            </div>
+                            <div class="metric risk-col">
+                                <span class="label">Market Saturation</span>
+                                <div class="risk-indicator">
+                                    <div class="risk-bar high"><div style="width: 80%"></div></div>
+                                    <span class="risk-label">High</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <div class="loading-overlay" id="output-loader">
+                    <div class="cyber-spinner"></div>
+                    <p>Computing optimal pathways...</p>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="ai-app.js"></script>
+</body>
+</html>

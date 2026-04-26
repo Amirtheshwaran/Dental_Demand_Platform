@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Demand Analysis Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons: Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation & Filters -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="ph ph-tooth logo-icon"></i>
+                <div>
+                    <h1>Dental Demand</h1>
+                    <p>Analysis Platform</p>
+                </div>
+            </div>
+
+            <nav class="main-nav">
+                <button class="nav-btn active" data-view="dashboard">
+                    <i class="ph ph-squares-four"></i> Dashboard
+                </button>
+                <button class="nav-btn" data-view="phase2">
+                    <i class="ph ph-trend-up"></i> Demand Index
+                </button>
+                <button class="nav-btn" data-view="ai-recs">
+                    <i class="ph ph-brain"></i> AI Recommendations
+                </button>
+            </nav>
+
+            <div class="filters-panel">
+                <h3>Global Filters</h3>
+                
+                <div class="filter-group">
+                    <label>State Selection</label>
+                    <select multiple class="multi-select" id="stateSelect">
+                        <option value="all" selected>All States</option>
+                        <option value="TX">Texas</option>
+                        <option value="FL">Florida</option>
+                        <option value="NY">New York</option>
+                        <option value="CA">California</option>
+                        <option value="OH">Ohio</option>
+                        <option value="PA">Pennsylvania</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Prevalence Range: <span id="prevalenceValue">10% - 40%+</span></label>
+                    <input type="range" id="prevalenceSlider" min="0" max="50" value="10" class="slider">
+                </div>
+
+                <div class="filter-group row-group">
+                    <label>Show Top 10 Only</label>
+                    <label class="switch">
+                        <input type="checkbox" id="top10Toggle" checked>
+                        <span class="slider-toggle round"></span>
+                    </label>
+                </div>
+
+                <div class="filter-group row-group disabled" title="Phase 2 Feature">
+                    <label>Rural vs Urban</label>
+                    <label class="switch">
+                        <input type="checkbox" disabled>
+                        <span class="slider-toggle round"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar">EB</div>
+                    <div class="user-info">
+                        <span class="name">Exec Board</span>
+                        <span class="role">Strategy Partner</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- View: Dashboard -->
+            <div id="view-dashboard" class="view-section active">
+                <header class="view-header">
+                    <div>
+                        <h2>Complete Tooth Loss Overview</h2>
+                        <p class="subtitle">Adults Aged 65+ | US County Level Analysis</p>
+                    </div>
+                </header>
+
+                <!-- Insights Panel -->
+                <div class="insights-panel">
+                    <div class="insight-card">
+                        <div class="icon-wrapper"><i class="ph ph-map-pin"></i></div>
+                        <div class="insight-data">
+                            <span class="label">Highest Prevalence</span>
+                            <span class="value" id="highestPrevVal">McDowell, WV (41.2%)</span>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="icon-wrapper"><i class="ph ph-chart-polar"></i></div>
+                        <div class="insight-data">
+                            <span class="label">National Average</span>
+                            <span class="value">13.8%</span>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="icon-wrapper"><i class="ph ph-selection-all"></i></div>
+                        <div class="insight-data">
+                            <span class="label">Counties Analyzed</span>
+                            <span class="value" id="countyCountVal">3,142</span>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="icon-wrapper"><i class="ph ph-globe-hemisphere-west"></i></div>
+                        <div class="insight-data">
+                            <span class="label">Key Cluster Region</span>
+                            <span class="value text-highlight">Appalachia & Southeast</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card primary-chart">
+                        <div class="card-header">
+                            <h3>County Rankings by Prevalence</h3>
+                            <button class="icon-btn"><i class="ph ph-dots-three"></i></button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="prevalenceBarChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card secondary-chart">
+                        <div class="card-header">
+                            <h3>Geographic Distribution</h3>
+                            <span class="badge">Preview</span>
+                        </div>
+                        <div class="map-placeholder">
+                            <i class="ph ph-map-trifold"></i>
+                            <p>Choropleth Map Visualization</p>
+                            <span class="subtext">County-level density map loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Phase 2 Demand Index -->
+            <div id="view-phase2" class="view-section">
+                <header class="view-header">
+                    <div>
+                        <h2>Dental Demand Index</h2>
+                        <p class="subtitle">Composite scoring combining prevalence, demographics, and economics</p>
+                    </div>
+                    <div class="toggle-container">
+                        <span class="toggle-label">Raw Prevalence</span>
+                        <label class="switch">
+                            <input type="checkbox" id="indexToggle" checked>
+                            <span class="slider-toggle round"></span>
+                        </label>
+                        <span class="toggle-label active">Demand Index</span>
+                    </div>
+                </header>
+
+                <div class="charts-grid half-split">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h3>Index Component Weighting</h3>
+                        </div>
+                        <div class="component-bars">
+                            <div class="comp-bar">
+                                <div class="comp-label"><span>Tooth Loss Prevalence</span> <span>40%</span></div>
+                                <div class="bar-track"><div class="bar-fill blue" style="width: 40%"></div></div>
+                            </div>
+                            <div class="comp-bar">
+                                <div class="comp-label"><span>Population 65+</span> <span>30%</span></div>
+                                <div class="bar-track"><div class="bar-fill teal" style="width: 30%"></div></div>
+                            </div>
+                            <div class="comp-bar">
+                                <div class="comp-label"><span>Median Income</span> <span>20%</span></div>
+                                <div class="bar-track"><div class="bar-fill light-blue" style="width: 20%"></div></div>
+                            </div>
+                            <div class="comp-bar">
+                                <div class="comp-label"><span>Urban Density</span> <span>10%</span></div>
+                                <div class="bar-track"><div class="bar-fill grey" style="width: 10%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h3>Top Demand Markets</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="demandIndexChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: AI Recommendations -->
+            <div id="view-ai-recs" class="view-section">
+                <header class="view-header">
+                    <div class="ai-title">
+                        <i class="ph-fill ph-sparkle"></i>
+                        <h2>AI-Powered Expansion Recommendations</h2>
+                    </div>
+                    <p class="subtitle">Strategic clinic placement suggestions based on predictive modeling.</p>
+                </header>
+
+                <div class="ai-flow-visualization">
+                    <div class="flow-node">
+                        <i class="ph ph-database"></i>
+                        <span>Ingest Demographics & Health Data</span>
+                    </div>
+                    <div class="flow-arrow"><i class="ph ph-arrow-right"></i></div>
+                    <div class="flow-node highlight">
+                        <i class="ph ph-cpu"></i>
+                        <span>Propensity & Clustering Model</span>
+                    </div>
+                    <div class="flow-arrow"><i class="ph ph-arrow-right"></i></div>
+                    <div class="flow-node">
+                        <i class="ph ph-target"></i>
+                        <span>Predict Optimal Formats</span>
+                    </div>
+                </div>
+
+                <div class="recommendations-grid">
+                    <div class="ai-card denture">
+                        <div class="card-badge">Top Match</div>
+                        <div class="card-title">
+                            <h3>Denture-Focused Clinic</h3>
+                            <i class="ph ph-tooth"></i>
+                        </div>
+                        <p class="target-market">Target: <strong>Rural, High Prevalence</strong></p>
+                        <ul class="rec-list">
+                            <li><strong>#1 Recommendation:</strong> McDowell County, WV</li>
+                            <li><strong>#2 Recommendation:</strong> Marion County, FL</li>
+                            <li><strong>#3 Recommendation:</strong> Cameron County, TX</li>
+                        </ul>
+                        <div class="reasoning">
+                            <span>AI Reasoning:</span> High concentrations of complete tooth loss (>30%) coupled with lower median incomes and significant senior populations.
+                        </div>
+                        <button class="btn primary">View Site Analysis</button>
+                    </div>
+
+                    <div class="ai-card implant">
+                        <div class="card-badge">High Margin Target</div>
+                        <div class="card-title">
+                            <h3>Implant-Focused Clinic</h3>
+                            <i class="ph ph-screw"></i>
+                        </div>
+                        <p class="target-market">Target: <strong>Urban, High Income, Moderate Prevalence</strong></p>
+                        <ul class="rec-list">
+                            <li><strong>#1 Recommendation:</strong> Collier County, FL</li>
+                            <li><strong>#2 Recommendation:</strong> Scottsdale (Maricopa), AZ</li>
+                            <li><strong>#3 Recommendation:</strong> Bergen County, NJ</li>
+                        </ul>
+                        <div class="reasoning">
+                            <span>AI Reasoning:</span> Moderate tooth loss rates combined with top-quartile median incomes and high density of seniors looking for premium restorative options.
+                        </div>
+                        <button class="btn secondary">View Site Analysis</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
