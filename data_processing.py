@@ -18,7 +18,6 @@ def load_and_clean_data(file_path_or_buffer):
         
     # Standardize column names
     col_mapping = {
-        'LocationName': 'County',
         'StateAbbr': 'State',
         'StateDesc': 'State_Name',
         'Data_Value': 'Prevalence',
@@ -31,6 +30,17 @@ def load_and_clean_data(file_path_or_buffer):
         'LocationID': 'FIPS' # Useful for mapping
     }
     df.rename(columns=col_mapping, inplace=True)
+    
+    # Handle County Name for both County-level and Tract-level datasets
+    if 'CountyName' in df.columns:
+        df.rename(columns={'CountyName': 'County'}, inplace=True)
+    elif 'LocationName' in df.columns:
+        df.rename(columns={'LocationName': 'County'}, inplace=True)
+        
+    # Clean TotalPopulation if it exists to unlock 2D clustering and anomaly detection
+    if 'TotalPopulation' in df.columns:
+        df['TotalPopulation'] = df['TotalPopulation'].astype(str).str.replace(',', '', regex=False).str.replace('"', '', regex=False).str.strip()
+        df['TotalPopulation'] = pd.to_numeric(df['TotalPopulation'], errors='coerce')
     
     # Drop rows with missing Prevalence
     if 'Prevalence' in df.columns:

@@ -6,6 +6,11 @@ This Streamlit app helps explore dental health demand and access patterns using 
 ## App Deployment URL
 [Link to deployed Streamlit app]
 
+## Dataset Compatibility
+The platform supports two types of data uploads:
+- **CDC-Only Mode (Raw PLACES Data):** If you upload a raw CDC PLACES dataset (like the 2025 County Data release), the app automatically detects that demographic variables (like Income, Age, Density) are missing. It will gracefully switch to "CDC-Only Mode," hiding the demographic sliders and ranking counties based purely on a normalized Tooth-Loss Prevalence demand index.
+- **Enriched Mode:** If your uploaded CSV has been merged with US Census/ACS variables (e.g., `MedianIncome`, `Pop65Plus`, `UrbanDensity`), the app unlocks demographic weighting sliders, allowing for full multi-variable ML inference.
+
 ## Local Setup Instructions
 
 ```bash

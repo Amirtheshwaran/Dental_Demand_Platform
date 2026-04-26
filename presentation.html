@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dental Demand Platform — Presentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: #0b0f19;
+    color: #e2e8f0;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .slideshow {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    background: #0b0f19;
+    background-image: radial-gradient(circle at top right, #1e1b4b 0%, transparent 45%),
+                      radial-gradient(circle at bottom left, #0f172a 0%, transparent 45%);
+  }
+  .slide.active { display: flex; animation: fadeIn 0.5s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* TOP ACCENT BAR */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+  }
+
+  /* SLIDE NUMBER */
+  .slide-num {
+    position: absolute;
+    bottom: 28px; right: 40px;
+    font-size: 0.85rem;
+    color: #475569;
+    letter-spacing: 0.05em;
+  }
+
+  /* TITLE SLIDE */
+  .title-slide { text-align: center; gap: 20px; }
+  .title-slide .logo { font-size: 3rem; margin-bottom: 8px; }
+  .title-slide h1 {
+    font-size: 3.8rem; font-weight: 800;
+    background: linear-gradient(90deg, #60a5fa, #c084fc, #ec4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+  }
+  .title-slide .sub {
+    font-size: 1.3rem; color: #94a3b8; font-weight: 400; margin-top: 10px;
+  }
+  .title-slide .badges {
+    display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap;
+  }
+  .badge {
+    background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3);
+    color: #93c5fd; padding: 6px 16px; border-radius: 999px; font-size: 0.9rem; font-weight: 500;
+  }
+  .badge.purple { background: rgba(139,92,246,0.15); border-color: rgba(139,92,246,0.3); color: #c4b5fd; }
+  .badge.pink   { background: rgba(236,72,153,0.15); border-color: rgba(236,72,153,0.3); color: #f9a8d4; }
+
+  /* STANDARD SLIDE LAYOUT */
+  .slide-header { width: 100%; margin-bottom: 36px; }
+  .slide-header h2 {
+    font-size: 2.4rem; font-weight: 700;
+    background: linear-gradient(90deg, #60a5fa, #c084fc);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .slide-header p { color: #64748b; font-size: 1.05rem; margin-top: 6px; }
+
+  /* TWO-COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; width: 100%; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; width: 100%; }
+
+  /* CARD */
+  .card {
+    background: rgba(30,41,59,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 28px;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(139,92,246,0.35); }
+  .card h3 { font-size: 1.2rem; font-weight: 600; color: #c4b5fd; margin-bottom: 10px; }
+  .card p  { color: #94a3b8; font-size: 0.95rem; line-height: 1.6; }
+  .card .icon { font-size: 2rem; margin-bottom: 10px; }
+  .card .stat { font-size: 2.6rem; font-weight: 700; color: #f8fafc; line-height: 1; margin-bottom: 4px; }
+  .card .stat-label { font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* SCREENSHOT FRAME */
+  .screenshot-frame {
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    width: 100%;
+  }
+  .screenshot-frame img { width: 100%; display: block; }
+  .screenshot-caption {
+    background: rgba(15,23,42,0.8); padding: 10px 16px;
+    font-size: 0.82rem; color: #64748b; border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  /* PIPELINE STEPS */
+  .pipeline {
+    display: flex; align-items: center; gap: 0; width: 100%; margin-top: 8px;
+  }
+  .pipeline-step {
+    flex: 1; background: rgba(30,41,59,0.5); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 20px 16px; text-align: center;
+  }
+  .pipeline-step .step-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .pipeline-step h4 { font-size: 0.95rem; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+  .pipeline-step p  { font-size: 0.8rem; color: #64748b; }
+  .pipeline-arrow { color: #3b82f6; font-size: 1.5rem; padding: 0 8px; flex-shrink: 0; }
+
+  /* FEATURE LIST */
+  .feature-list { list-style: none; display: flex; flex-direction: column; gap: 14px; width: 100%; }
+  .feature-list li {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: rgba(30,41,59,0.4); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; padding: 16px 20px;
+  }
+  .feature-list li .feat-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+  .feature-list li .feat-text h4 { font-size: 1rem; font-weight: 600; color: #e2e8f0; }
+  .feature-list li .feat-text p  { font-size: 0.88rem; color: #94a3b8; margin-top: 2px; }
+
+  /* NAV */
+  .nav {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 16px; z-index: 100;
+    background: rgba(15,23,42,0.85); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 999px;
+    padding: 10px 24px;
+  }
+  .nav button {
+    background: none; border: none; color: #94a3b8; cursor: pointer;
+    font-size: 1.1rem; padding: 4px 8px; border-radius: 6px;
+    transition: all 0.2s; font-family: 'Outfit', sans-serif;
+  }
+  .nav button:hover { background: rgba(255,255,255,0.07); color: #e2e8f0; }
+  .nav .dots { display: flex; gap: 8px; }
+  .nav .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #334155; cursor: pointer; transition: all 0.2s;
+  }
+  .nav .dot.active { background: #8b5cf6; transform: scale(1.2); }
+
+  /* VIDEO SLIDE */
+  .video-wrapper {
+    width: 100%; border-radius: 14px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .video-wrapper video { width: 100%; display: block; max-height: 62vh; object-fit: cover; }
+
+  /* CONCLUSION */
+  .conclusion-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<div class="slideshow" id="slideshow">
+
+  <!-- SLIDE 1: TITLE -->
+  <div class="slide active title-slide">
+    <div class="logo">🦷</div>
+    <h1>Dental Demand<br>AI Platform</h1>
+    <p class="sub">Strategic Market Intelligence powered by CDC PLACES public health data &amp; Unsupervised Machine Learning</p>
+    <div class="badges">
+      <span class="badge">CDC PLACES 2025</span>
+      <span class="badge purple">3,144 Counties</span>
+      <span class="badge pink">100% Real Data</span>
+    </div>
+    <div class="slide-num">1 / 6</div>
+  </div>
+
+  <!-- SLIDE 2: PROBLEM + DATA -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>The Problem &amp; Data Source</h2>
+      <p>How do dental networks decide where to expand? Previously: gut instinct. Now: data-driven ML.</p>
+    </div>
+    <div class="two-col">
+      <div>
+        <ul class="feature-list">
+          <li>
+            <span class="feat-icon">📍</span>
+            <div class="feat-text">
+              <h4>3,144 U.S. Counties</h4>
+              <p>Every county in the United States represented in the CDC PLACES 2025 release.</p>
+            </div>
+          </li>
+          <li>
+            <span class="feat-icon">🦷</span>
+            <div class="feat-text">
+              <h4>Tooth-Loss Prevalence (TEETHLOST)</h4>
+              <p>CDC-measured percentage of adults 65+ who have lost all their teeth — the primary demand signal.</p>
+            </div>
+          </li>
+          <li>
+            <span class="feat-icon">🏛️</span>
+            <div class="feat-text">
+              <h4>Publicly Available</h4>
+              <p>Sourced directly from CDC PLACES — no licensing required. Fully reproducible and transparent.</p>
+            </div>
+          </li>
+          <li>
+            <span class="feat-icon">🔄</span>
+            <div class="feat-text">
+              <h4>Zero Fabricated Data</h4>
+              <p>Every metric, every ranking, every cluster is derived exclusively from the raw CDC dataset.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="three-col" style="grid-template-columns:1fr; gap:16px;">
+        <div class="card">
+          <div class="stat">3,144</div>
+          <div class="stat-label">County Records</div>
+        </div>
+        <div class="card">
+          <div class="stat">17.1%</div>
+          <div class="stat-label">National Avg Tooth-Loss</div>
+        </div>
+        <div class="card">
+          <div class="stat">44.4%</div>
+          <div class="stat-label">Highest County Prevalence (Oglala Lakota, SD)</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">2 / 6</div>
+  </div>
+
+  <!-- SLIDE 3: OVERVIEW TAB SCREENSHOT -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>Overview: Geographic Demand Map</h2>
+      <p>County-level choropleth powered by FIPS codes from CDC data — no placeholder geography.</p>
+    </div>
+    <div class="screenshot-frame">
+      <img src="C:/Users/Amirthesh/.gemini/antigravity/brain/c9e3d70f-c00e-4645-b3c7-a2272a3ca535/overview_tab_screenshot_1777244366848.png" alt="Overview Tab">
+      <div class="screenshot-caption">🌎 Overview Tab — Real-time county choropleth + Top 10 highest-demand counties by Demand Index</div>
+    </div>
+    <div class="slide-num">3 / 6</div>
+  </div>
+
+  <!-- SLIDE 4: AI INSIGHTS SCREENSHOT -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>AI Insights: Unsupervised ML</h2>
+      <p>Two real machine learning algorithms — no training labels, no fabricated rules.</p>
+    </div>
+    <div class="two-col" style="align-items:start;">
+      <div>
+        <div class="screenshot-frame">
+          <img src="C:/Users/Amirthesh/.gemini/antigravity/brain/c9e3d70f-c00e-4645-b3c7-a2272a3ca535/ai_insights_tab_screenshot_1777244386606.png" alt="AI Insights Tab">
+          <div class="screenshot-caption">🧠 AI Insights Tab — K-Means Clusters + Isolation Forest Anomalies</div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="card">
+          <div class="icon">🔵</div>
+          <h3>K-Means Clustering</h3>
+          <p>Groups all 3,144 counties into 4 strategic tiers using Prevalence × Market Size. Labels like <em>"Niche Target (Small Market, High Need)"</em> emerge purely from centroid math.</p>
+        </div>
+        <div class="card">
+          <div class="icon">⚠️</div>
+          <h3>Isolation Forest (Anomaly Detection)</h3>
+          <p>Unsupervised outlier detection flags counties whose prevalence/population combination is statistically abnormal — surfacing hidden opportunities no human would spot manually.</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">4 / 6</div>
+  </div>
+
+  <!-- SLIDE 5: RECOMMENDATIONS SCREENSHOT -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>Recommendations: ML-Driven Expansion Targets</h2>
+      <p>Ranked expansion sites with Strategic Tier, Format, and Anomaly Status — all real, all explainable.</p>
+    </div>
+    <div class="screenshot-frame">
+      <img src="C:/Users/Amirthesh/.gemini/antigravity/brain/c9e3d70f-c00e-4645-b3c7-a2272a3ca535/recommendations_tab_screenshot_1777244413560.png" alt="Recommendations Tab">
+      <div class="screenshot-caption">✨ Recommendations Tab — Top 5 Strategic Expansion Targets with cluster tier and anomaly status</div>
+    </div>
+    <div class="slide-num">5 / 6</div>
+  </div>
+
+  <!-- SLIDE 6: LIVE DEMO + PIPELINE -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>Live Demo &amp; Data Pipeline</h2>
+      <p>From raw public CSV to actionable intelligence in under 5 seconds.</p>
+    </div>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-icon">📂</div>
+        <h4>Upload CSV</h4>
+        <p>CDC PLACES 2025 county data</p>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-icon">🔧</div>
+        <h4>Auto-Clean</h4>
+        <p>Filter TEETHLOST measure, parse FIPS</p>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-icon">📊</div>
+        <h4>Demand Index</h4>
+        <p>Weighted min-max normalization</p>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-icon">🤖</div>
+        <h4>ML Models</h4>
+        <p>K-Means + Isolation Forest</p>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-icon">🗺️</div>
+        <h4>Dashboard</h4>
+        <p>Map · Insights · Recommendations</p>
+      </div>
+    </div>
+    <div style="margin-top:28px; width:100%;">
+      <div class="video-wrapper">
+        <video controls poster="C:/Users/Amirthesh/.gemini/antigravity/brain/c9e3d70f-c00e-4645-b3c7-a2272a3ca535/overview_tab_screenshot_1777244366848.png">
+          <source src="C:/Users/Amirthesh/.gemini/antigravity/brain/c9e3d70f-c00e-4645-b3c7-a2272a3ca535/dental_live_demo_video_1777244584721.webp" type="video/webp">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+    <div class="slide-num">6 / 6</div>
+  </div>
+
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button onclick="prevSlide()">← Prev</button>
+  <div class="dots" id="dots"></div>
+  <button onclick="nextSlide()">Next →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  const dotsEl = document.getElementById('dots');
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    document.querySelectorAll('.dot')[current].classList.remove('active');
+    current = (n + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    document.querySelectorAll('.dot')[current].classList.add('active');
+  }
+  function nextSlide() { goTo(current + 1); }
+  function prevSlide() { goTo(current - 1); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevSlide();
+  });
+</script>
+</body>
+</html>

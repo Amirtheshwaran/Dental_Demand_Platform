@@ -7,7 +7,7 @@ import io
 import anthropic
 
 from data_processing import load_and_clean_data, calculate_demand_index
-from model import run_clustering, train_and_predict_clinic_type, get_recommendation_reasoning
+from model import run_clustering, run_anomaly_detection, get_recommendation_reasoning
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -173,7 +173,7 @@ st.sidebar.caption("Provide context dataset to begin analysis.")
 uploaded_file = st.sidebar.file_uploader("Upload CDC Data (CSV)", type=["csv"])
 
 @st.cache_data(show_spinner=False)
-def get_data(file_obj):
+def get_cleaned_data_v2(file_obj):
     return load_and_clean_data(file_obj)
 
 if not uploaded_file:
@@ -188,7 +188,7 @@ if not uploaded_file:
     st.stop()
 
 with st.spinner("Processing Data Pipeline..."):
-    df_raw = get_data(uploaded_file)
+    df_raw = get_cleaned_data_v2(uploaded_file)
     
 if df_raw.empty:
     st.error("The uploaded dataset did not contain the required CDC PLACES target rows (MeasureId='TEETHLOST').")
@@ -228,7 +228,7 @@ if df_filtered.empty:
 
 # ML Inference
 df_final = run_clustering(df_filtered, n_clusters=4)
-df_final, rf_model, importances = train_and_predict_clinic_type(df_final)
+df_final = run_anomaly_detection(df_final)
 
 # Sorting for Top Markets by County (drops duplicate tracts per county)
 if 'State' in df_final.columns and 'County' in df_final.columns:
@@ -310,14 +310,23 @@ with tab_ai:
         with col_c1:
             st.markdown('<div class="premium-container">', unsafe_allow_html=True)
             st.subheader("Market Clusters (K-Means)")
-            st.markdown("Counties segmented by underlying behavioral and economic features.")
+            st.markdown("Counties dynamically segmented using 100% real numeric data.")
             
             x_col = "Prevalence" 
-            y_col = "Median_Income" if "Median_Income" in df_final.columns else "Demand_Index"
+            
+            # Determine best y_col based on what's available
+            if "Median_Income" in df_final.columns:
+                y_col = "Median_Income"
+            elif "TotalPopulation" in df_final.columns:
+                y_col = "TotalPopulation"
+            else:
+                y_col = "Demand_Index"
             
             if x_col in df_final.columns and y_col in df_final.columns:
-                fig_cluster = px.scatter(df_final, x=x_col, y=y_col, color="Cluster_Name", 
+                use_log = (y_col == "TotalPopulation")
+                fig_cluster = px.scatter(df_final, x=x_col, y=y_col, color="Cluster_Name",
                                          hover_name="County", size="Demand_Index",
+                                         log_y=use_log,
                                          color_discrete_sequence=px.colors.qualitative.Pastel,
                                          template="plotly_dark")
                 fig_cluster.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", margin={"t":10})
@@ -328,15 +337,20 @@ with tab_ai:
                 
         with col_c2:
             st.markdown('<div class="premium-container">', unsafe_allow_html=True)
-            st.subheader("Feature Importance (Random Forest)")
-            st.markdown("Which variables drive the optimal clinic format prediction?")
-            if importances:
-                imp_df = pd.DataFrame(list(importances.items()), columns=['Feature', 'Importance']).sort_values(by='Importance', ascending=True)
-                fig_imp = px.bar(imp_df, x='Importance', y='Feature', orientation='h', color='Importance', color_continuous_scale='Teal', template="plotly_dark")
-                fig_imp.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", margin={"t":10})
-                st.plotly_chart(fig_imp, use_container_width=True)
+            st.subheader("Market Anomalies (Isolation Forest)")
+            st.markdown("Unsupervised ML identifies statistically unusual markets based on raw features.")
+            
+            if 'Anomaly_Score' in df_final.columns and df_final['Is_Anomaly'].sum() > 0:
+                df_anom = df_final[df_final['Is_Anomaly']].sort_values(by="Anomaly_Score", ascending=False).head(10)
+                
+                if not df_anom.empty:
+                    fig_imp = px.bar(df_anom, x='Anomaly_Score', y='County', orientation='h', color='Anomaly_Score', color_continuous_scale='Teal', template="plotly_dark")
+                    fig_imp.update_layout(yaxis={'categoryorder':'total ascending'}, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", margin={"t":10})
+                    st.plotly_chart(fig_imp, use_container_width=True)
+                else:
+                    st.info("No significant statistical anomalies detected in this dataset.")
             else:
-                st.info("Random Forest requires more demographic columns (Income, Density) to train accurately.")
+                st.info("Isolation Forest requires multiple numeric columns to detect anomalies reliably.")
             st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.warning("AI Insights are toggled off. Toggle 'Raw Data vs AI Insights' in the sidebar to view.")
@@ -357,11 +371,13 @@ with tab_recs:
         for idx, row in top_5.iterrows():
             with st.expander(f"📍 {row['County']}, {row.get('State','')} — Demand Score: {row['Demand_Index']}", expanded=True):
                 r1, r2, r3 = st.columns(3)
-                r1.metric("Predicted Format", row.get('Predicted_Clinic_Type', 'Unknown'))
+                r1.metric("Strategic Tier", row.get('Cluster_Name', 'General Tier'))
                 
                 size = "Large" if row['Demand_Index'] > 85 else ("Medium" if row['Demand_Index'] > 60 else "Small")
-                r2.metric("Recommended Size", size)
-                r3.metric("Cluster Assignment", row.get('Cluster_Name', 'N/A'))
+                r2.metric("Recommended Format", size)
+                
+                is_anomaly = row.get('Is_Anomaly', False)
+                r3.metric("Anomaly Status", "⚠️ Outlier Market" if is_anomaly else "Standard Market")
                 
                 st.markdown("**Strategic Reasoning:**")
                 st.info(f"{get_recommendation_reasoning(row)}")
@@ -398,7 +414,7 @@ with tab_chat:
             with st.spinner("AI is analyzing live data..."):
                 try:
                     summary = f"Total Datapoints: {len(df_final)}\nOverall Avg Prevalence: {df_final['Prevalence'].mean():.2f}%\n"
-                    top_5_markets = df_top.head(5)[['County', 'State', 'Demand_Index', 'Predicted_Clinic_Type']].to_string()
+                    top_5_markets = df_top.head(5)[['County', 'State', 'Demand_Index', 'Cluster_Name']].to_string()
                     prompt = f"Data Summary:\n{summary}\nTop 5 Demands:\n{top_5_markets}\n\nUser Question:\n{user_query}\n\nProvide a concise and strategic answer using only the data trends above. Do NOT make up markets."
                     
                     client = anthropic.Anthropic(api_key=api_key)

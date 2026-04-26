@@ -2,15 +2,21 @@ import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import IsolationForest
 
 def run_clustering(df, n_clusters=4):
     """
     Clusters counties based on available demographic and health metrics to find strategic segments.
     """
     df_clustered = df.copy()
-    features = ['Prevalence', 'Population_65_Plus', 'Median_Income', 'Urban_Density']
-    available_features = [f for f in features if f in df_clustered.columns]
+    
+    # Try all possible numeric features, prioritize enriched ones, but fallback to TotalPopulation if available
+    potential_features = ['Prevalence', 'Population_65_Plus', 'Median_Income', 'Urban_Density', 'TotalPopulation']
+    available_features = [f for f in potential_features if f in df_clustered.columns]
+    
+    # Force numeric to prevent string reduction errors from cached data
+    for f in available_features:
+        df_clustered[f] = pd.to_numeric(df_clustered[f], errors='coerce')
     
     if len(available_features) < 2:
         df_clustered['Cluster'] = 0
@@ -34,85 +40,89 @@ def run_clustering(df, n_clusters=4):
         prev = center.get('Prevalence', 0)
         inc = center.get('Median_Income', 0)
         dens = center.get('Urban_Density', 0)
+        pop = center.get('TotalPopulation', 0)
         
-        # Simple heuristics based on z-scores
-        if prev > 0.3 and dens < 0:
-            name = "High-Risk Rural"
-        elif prev > 0 and dens > 0:
-            name = "Urban High-Need"
-        elif inc > 0.5 and dens > 0:
-            name = "Urban Premium (High Income)"
-        elif prev < 0 and inc > 0:
-            name = "Affluent Low-Risk"
+        # Heuristics based on z-scores
+        if 'Median_Income' in available_features:
+            if prev > 0.3 and dens < 0:
+                name = "High-Risk Rural"
+            elif prev > 0 and dens > 0:
+                name = "Urban High-Need"
+            elif inc > 0.5 and dens > 0:
+                name = "Urban Premium (High Income)"
+            elif prev < 0 and inc > 0:
+                name = "Affluent Low-Risk"
+            else:
+                name = "Stable Suburban"
         else:
-            name = "Stable Suburban"
+            # Fallback to Prevalence and Population rules
+            if prev > 0.5 and pop > 0.5:
+                name = "High-Volume Target (Large Market, High Need)"
+            elif prev > 0.5 and pop <= 0.5:
+                name = "Niche Target (Small Market, High Need)"
+            elif prev <= 0.5 and pop > 0.5:
+                name = "Competitive Hub (Large Market, Average Need)"
+            else:
+                name = "Low Priority (Small Market, Low Need)"
             
         cluster_names[i] = name
         
     df_clustered['Cluster_Name'] = df_clustered['Cluster'].map(cluster_names)
     return df_clustered
 
-def train_and_predict_clinic_type(df):
+def run_anomaly_detection(df):
     """
-    Trains a predictive model to recommend clinic type.
-    Creates a synthetic ground truth for 'Optimal_Clinic' to demonstrate the model 
-    as an 'AI Strategy' system based on realistic county profiles.
+    Uses Isolation Forest to detect statistical anomalies in the market data using 100% real features.
+    No fabricated labels are used.
     """
     df_ml = df.copy()
     
-    features = ['Prevalence', 'Population_65_Plus', 'Median_Income', 'Urban_Density']
-    available_features = [f for f in features if f in df_ml.columns]
+    potential_features = ['Prevalence', 'Population_65_Plus', 'Median_Income', 'Urban_Density', 'TotalPopulation']
+    available_features = [f for f in potential_features if f in df_ml.columns]
     
-    if len(available_features) == 0:
-        df_ml['Predicted_Clinic_Type'] = "Hybrid Clinic"
-        return df_ml, None, {}
-        
-    # Generate Synthetic Labels for Training (Rule-based surrogate for historical data)
-    def determine_ground_truth(row):
-        prev = row.get('Prevalence', 15) # Example national avg ~13-15%
-        inc = row.get('Median_Income', 60000)
-        dens = row.get('Urban_Density', 500) # Assume 500 people/sq mi
-        
-        # Heuristics mimicking business strategy:
-        if prev > 20 and inc < 50000:
-            return 'Denture Center'
-        elif inc > 80000 and dens > 1000:
-            return 'Implant Studio'
-        else:
-            return 'Hybrid Clinic'
-            
-    df_ml['Ground_Truth_Clinic'] = df_ml.apply(determine_ground_truth, axis=1)
+    # Force numeric
+    for f in available_features:
+        df_ml[f] = pd.to_numeric(df_ml[f], errors='coerce')
     
+    if len(available_features) < 2:
+        df_ml['Anomaly_Score'] = 0.0
+        df_ml['Is_Anomaly'] = False
+        return df_ml
+        
     X = df_ml[available_features].fillna(df_ml[available_features].median())
-    y = df_ml['Ground_Truth_Clinic']
     
-    # Handle edge case where all are same class
-    if len(y.unique()) < 2:
-        df_ml['Predicted_Clinic_Type'] = y
-        return df_ml, None, {}
-        
-    clf = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=5)
-    clf.fit(X, y)
+    # Train Isolation Forest
+    iso = IsolationForest(contamination=0.05, random_state=42)
+    iso.fit(X)
     
-    df_ml['Predicted_Clinic_Type'] = clf.predict(X)
+    # Anomaly scores (lower is more anomalous, we negate it so higher = more anomalous)
+    scores = iso.decision_function(X)
+    df_ml['Anomaly_Score'] = -scores 
     
-    # Feature importances
-    importances = dict(zip(available_features, clf.feature_importances_))
+    df_ml['Is_Anomaly'] = iso.predict(X) == -1
     
-    return df_ml, clf, importances
+    return df_ml
 
 def get_recommendation_reasoning(row):
     """
-    Rule-based reasoning text for the recommendations.
+    Rule-based reasoning text for the recommendations using strictly true data traits.
     """
-    clinic_type = row.get('Predicted_Clinic_Type', 'Hybrid Clinic')
     prev = row.get('Prevalence', 0)
-    cluster = row.get('Cluster_Name', '')
+    cluster = row.get('Cluster_Name', 'General Tier')
+    demand = row.get('Demand_Index', 50)
+    is_anomaly = row.get('Is_Anomaly', False)
     
-    if clinic_type == 'Denture Center':
-        return f"High tooth loss prevalence ({prev:.1f}%) in {cluster} regions requires high-volume restorative care."
-    elif clinic_type == 'Implant Studio':
-        return f"Targets {cluster} demographics with purchasing power for premium implants and restorative products."
+    reasoning = f"This market falls into the '{cluster}' segment with a {prev:.1f}% tooth-loss prevalence. "
+    
+    if demand > 80:
+        reasoning += "Extremely high calculated demand suggests prioritizing high-volume restorative care. "
+    elif demand > 50:
+        reasoning += "Moderate demand indicates a balanced approach or hybrid clinic format. "
     else:
-        return f"Balanced demographic profile (Prevalence: {prev:.1f}%) suggests a hybrid approach covering diverse dental needs."
+        reasoning += "Lower relative demand suggests focusing on premium or preventative services. "
+        
+    if is_anomaly:
+        reasoning += "⚠️ Unsupervised ML flagged this county as a statistical anomaly, meaning its combination of prevalence and demographic traits is highly unusual compared to the national baseline."
+        
+    return reasoning
 
